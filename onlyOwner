@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+contract EnhancedStorage {
+    address public owner;
+    string public storedData;
+    uint256 public lastSetTimestamp;
+    uint256 public constant SET_INTERVAL = 1 days; // Set interval to 1 day
+
+    event DataStored(address indexed user, string data, uint256 timestamp);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
+    }
+
+    modifier canSet() {
+        require(block.timestamp >= lastSetTimestamp + SET_INTERVAL, "Set interval not reached");
+        _;
+    }
+
+    constructor() {
+        owner = msg.sender;
+    }
+
+    function set(string memory newData) external onlyOwner canSet {
+        storedData = newData;
+        lastSetTimestamp = block.timestamp;
+        emit DataStored(msg.sender, newData, block.timestamp);
+    }
+
+    function get() external view returns (string memory) {
+        return storedData;
+    }
+
+    function getLastSetTimestamp() external view returns (uint256) {
+        return lastSetTimestamp;
+    }
+}
